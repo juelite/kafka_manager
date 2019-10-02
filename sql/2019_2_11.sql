@@ -1,0 +1,1 @@
+alter table consumer_backup add `consume_template_id` int(11) NOT NULL DEFAULT '0' COMMENT '回调模板id';
