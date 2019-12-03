@@ -5,6 +5,7 @@ import (
 	"github.com/astaxie/beego"
 	"kafka_manager/common/kafka_aliware"
 	"kafka_manager/constants"
+	"log"
 )
 
 type TopicController struct {
@@ -19,16 +20,18 @@ type CreateTopicParam struct {
 }
 
 // 获取当前集群的所有topic
-func (this *TopicController) GetTopicsData() {
+func (t *TopicController) GetTopicsData() {
 	kafkaConf := &kafka_aliware.KafkaConfig{}
 	client, err := sarama.NewClient(kafkaConf.GetServers(), kafkaConf.GetConfig())
-	defer client.Close()
 	if err != nil {
-		this.ReturnData(constants.SERVER_ERROR, err.Error(), nil)
+		t.ReturnData(constants.SERVER_ERROR, err.Error(), nil)
+		return
 	}
+	defer client.Close()
 	topics, err := client.Topics()
 	if err != nil {
-		this.ReturnData(constants.SERVER_ERROR, err.Error(), nil)
+		t.ReturnData(constants.SERVER_ERROR, err.Error(), nil)
+		return
 	}
 	// 一个切片，然后切片的每一个元素为一个map,cap为100，避免频繁扩容
 	var data = make([]map[string]string, 0, 100)
@@ -37,20 +40,21 @@ func (this *TopicController) GetTopicsData() {
 		tmp["name"] = topicName
 		data = append(data, tmp)
 	}
-	this.ReturnData(constants.SUCCESS_CODE, "", data)
+	t.ReturnData(constants.SUCCESS_CODE, "", data)
 }
 
 // 创建一个新的topic
-func (this *TopicController) CreateTopic() {
+func (t *TopicController) CreateTopic() {
 	param := &CreateTopicParam{}
-	this.RequestData(param)
+	t.RequestData(param)
 	kafkaConf := kafka_aliware.KafkaConfig{}
 	admin, err := sarama.NewClusterAdmin(kafkaConf.GetServers(), kafkaConf.GetAdminClusterConfig())
-	defer admin.Close()
 	if err != nil {
 		// 将错误日志打出来,可以使用它们的日志微服务
-		this.ReturnData(constants.SERVER_ERROR, err.Error(), nil)
+		t.ReturnData(constants.SERVER_ERROR, err.Error(), nil)
+		return
 	}
+	defer admin.Close()
 	// 这个后期做成可自定义配置
 	numPartitions, _ := beego.AppConfig.Int("TOPIC_PARTITIONS")
 	replicationFactor, _ := beego.AppConfig.Int("REPLICATION_FACTOR")
@@ -61,7 +65,8 @@ func (this *TopicController) CreateTopic() {
 	// 集群创建topic，不区分单台机器
 	err = admin.CreateTopic(param.Topic, &topicDetail, false)
 	if err != nil {
-		this.ReturnData(constants.SERVER_ERROR, err.Error(), nil)
+		log.Println(2)
+		t.ReturnData(constants.SERVER_ERROR, err.Error(), nil)
 	}
-	this.ReturnData(constants.SUCCESS_CODE, "", nil)
+	t.ReturnData(constants.SUCCESS_CODE, "", nil)
 }

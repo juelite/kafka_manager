@@ -21,8 +21,8 @@ type ReturnData struct {
   * 接受参数方法
   * @param param interface{} 对应struct地址
  */
-func (this *BaseController) RequestData(param interface{})  {
-	this.ParseForm(param)
+func (b *BaseController) RequestData(param interface{})  {
+	b.ParseForm(param)
 	// 这里的错误信息可以进行重写,学会了反射之后进行自定义错误信息
 	valida := validation.Validation{}
 	valida.Valid(param)
@@ -33,7 +33,7 @@ func (this *BaseController) RequestData(param interface{})  {
 			break
 		}
 		var data map[string]interface{}
-		this.ReturnData(constants.ERROR_CODE, message, data)
+		b.ReturnData(constants.ERROR_CODE, message, data)
 	}
 }
 
@@ -43,13 +43,13 @@ func (this *BaseController) RequestData(param interface{})  {
   * @message 错误信息
   * data 数据
  */
-func (this *BaseController) ReturnData(code int, message string, data interface{})  {
-	this.Data["json"] =  map[string]interface{}{
+func (b *BaseController) ReturnData(code int, message string, data interface{})  {
+	b.Data["json"] =  map[string]interface{}{
 		"code": code,
 		"message" : message,
 		"data" :data,
 	}
-	this.ServeJSON()
-	this.StopRun()
+	b.ServeJSON()
+	b.StopRun()
 }
 

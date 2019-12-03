@@ -18,7 +18,7 @@ func init() {
 	producer, err = sarama.NewSyncProducer(kafkaConfig.GetServers(), kafkaConfig.GetProducerConfig())
 	fmt.Println("生产者开始运行，调用/api/message/new接口生产信息")
 	if err != nil {
-		panic("Kafka生产者初始化失败")
+		panic("Kafka生产者初始化失败" + err.Error())
 	}
 }
 

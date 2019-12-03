@@ -24,46 +24,46 @@ func init() {
 }
 
 // 通过consumerId获取单条备份记录
-func (this *ConsumerBackup) GetConsumerBackupByConsumerId(consumerId string) (data ConsumerBackup, err error) {
+func (c *ConsumerBackup) GetConsumerBackupByConsumerId(consumerId string) (data ConsumerBackup, err error) {
 	o := orm.NewOrm()
-	err = o.QueryTable(this).Filter("consumer_id", consumerId).One(&data)
+	err = o.QueryTable(c).Filter("consumer_id", consumerId).One(&data)
 	return
 }
 
 // 创建一条新ConsumerBackup数据
-func (this *ConsumerBackup) Insert() (int64, error) {
-	return orm.NewOrm().Insert(this)
+func (c *ConsumerBackup) Insert() (int64, error) {
+	return orm.NewOrm().Insert(c)
 }
 
 // 查询所有的consumerBackUp列表
-func (this *ConsumerBackup) GetConsumerBackUpList() (list []*ConsumerBackup, err error) {
+func (c *ConsumerBackup) GetConsumerBackUpList() (list []*ConsumerBackup, err error) {
 	o := orm.NewOrm()
-	_, err = o.QueryTable(this).All(&list)
+	_, err = o.QueryTable(c).All(&list)
 	return
 }
 
 // 删除指定的consumerBackUp项
-func (this *ConsumerBackup) DeleteByConsumerId(consumerId string) (err error) {
+func (c *ConsumerBackup) DeleteByConsumerId(consumerId string) (err error) {
 	o := orm.NewOrm()
-	_, err = o.QueryTable(this).Filter("consumer_id", consumerId).Delete()
+	_, err = o.QueryTable(c).Filter("consumer_id", consumerId).Delete()
 	return
 }
 
 // 更新单项数据
-func (this *ConsumerBackup) Update() (err error) {
+func (c *ConsumerBackup) Update() (err error) {
 	o := orm.NewOrm()
-	_, err = o.Update(this)
+	_, err = o.Update(c)
 	return
 }
 
 // 通过template获取所有的存活的消费者
-func (this *ConsumerBackup) GetAllLiveConsumerInfoByTemplateId(templateId int) (data []*ConsumerBackup) {
+func (c *ConsumerBackup) GetAllLiveConsumerInfoByTemplateId(templateId int) (data []*ConsumerBackup) {
 	o := orm.NewOrm()
-	o.QueryTable(this).Filter("consume_template_id", templateId).Filter("running", true).All(&data)
+	o.QueryTable(c).Filter("consume_template_id", templateId).Filter("running", true).All(&data)
 	return
 }
 
 // 判断消费者模板开启的消费者是否都已经关闭
-func (this *ConsumerBackup) IsConsumerShutdownOfTemplateId(templateId int) bool {
-	return len(this.GetAllLiveConsumerInfoByTemplateId(templateId)) <= 0
+func (c *ConsumerBackup) IsConsumerShutdownOfTemplateId(templateId int) bool {
+	return len(c.GetAllLiveConsumerInfoByTemplateId(templateId)) <= 0
 }

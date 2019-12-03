@@ -34,17 +34,17 @@ type ManagerConsumer struct {
 const CLOSE_SIGNAL = 1
 
 // 重启后，需要还原消费者现场
-func (this *ConsumerManagerService) InitConsumerAndRestore() {
-	resp, err := this.GetAllConsumersData()
+func (c *ConsumerManagerService) InitConsumerAndRestore() {
+	resp, err := c.GetAllConsumersData()
 	if err != nil {
-		go_micro_srv_client.ElcLog("kafkaManager", "kafka管理系统还原现场Redis出错"+err.Error(), "error")
+		_ = go_micro_srv_client.ElcLog("kafkaManager", "kafka管理系统还原现场Redis出错"+err.Error(), "error")
 		panic("kafka管理系统还原现场Redis出错" + err.Error())
 	}
 	signalsMap = make(map[string]chan int)
 	for _, consumerRecord := range resp {
-		err = this.StartConsumer(consumerRecord.Topic, consumerRecord.ConsumerGroup, consumerRecord.Callback, false, consumerRecord.ConsumerId, -1)
+		err = c.StartConsumer(consumerRecord.Topic, consumerRecord.ConsumerGroup, consumerRecord.Callback, false, consumerRecord.ConsumerId, -1)
 		if err != nil {
-			go_micro_srv_client.ElcLog("kafkaManager", "kafka管理系统还原现场Redis出错"+err.Error(), "error")
+			_ = go_micro_srv_client.ElcLog("kafkaManager", "kafka管理系统还原现场Redis出错"+err.Error(), "error")
 			panic("kafka管理系统还原现场Redis出错" + err.Error())
 		}
 		// 添加信号量管理，用于主动关闭某个协程
@@ -63,7 +63,7 @@ func (this *ConsumerManagerService) InitConsumerAndRestore() {
 @param consumerUUid 消费者协程唯一id
 @param consumeTemplateId 回调模板id
 */
-func (this *ConsumerManagerService) StartConsumer(topic string, consumerGroup string, callback string, newConsumer bool, consumerUUid string, consumeTemplateId int) (err error) {
+func (c *ConsumerManagerService) StartConsumer(topic string, consumerGroup string, callback string, newConsumer bool, consumerUUid string, consumeTemplateId int) (err error) {
 	kafkaConfig := kafka_aliware.KafkaConfig{}
 	consumer, err := cluster.NewConsumer(kafkaConfig.GetServers(), consumerGroup, []string{topic}, kafkaConfig.GetConsumerConfig())
 	if err != nil {
@@ -71,7 +71,7 @@ func (this *ConsumerManagerService) StartConsumer(topic string, consumerGroup st
 	}
 	// 如果停运的重启，恢复成运行状态,全量操作running为true
 	if newConsumer == false {
-		this.UpdateConsumerInfo(consumerUUid, true)
+		c.UpdateConsumerInfo(consumerUUid, true)
 	}
 	// 如果是新增的consumer客户端
 	if newConsumer == true {
@@ -102,7 +102,7 @@ func (this *ConsumerManagerService) StartConsumer(topic string, consumerGroup st
 			// goroutine异常退出，更新当前消费者状态running为false，警报 todo 自动重启机制
 			if err != nil {
 				go_micro_srv_client.ElcLog("kafkaManager", "协程宕机严重错误 consumerUUid: "+consumerUUid+fmt.Sprint(err), "error")
-				this.UpdateConsumerInfo(consumerUUid, false)
+				c.UpdateConsumerInfo(consumerUUid, false)
 				consumer.Close()
 			}
 		}()
@@ -149,7 +149,7 @@ func (this *ConsumerManagerService) StartConsumer(topic string, consumerGroup st
 }
 
 // 通过mysql获取所有的消费者 todo 能否面向接口编程，区分redis版和mysql版
-func (this *ConsumerManagerService) GetAllConsumersData() (data []*ManagerConsumer, err error) {
+func (c *ConsumerManagerService) GetAllConsumersData() (data []*ManagerConsumer, err error) {
 	consumerBackupModel := models.ConsumerBackup{}
 	consumerBackupList, err := consumerBackupModel.GetConsumerBackUpList()
 	if err != nil {
@@ -169,7 +169,7 @@ func (this *ConsumerManagerService) GetAllConsumersData() (data []*ManagerConsum
 }
 
 // 删除某个consumer消费者
-func (this *ConsumerManagerService) StopOneConsume(consumerId string) (bool, error) {
+func (c *ConsumerManagerService) StopOneConsume(consumerId string) (bool, error) {
 	if signalsMap[consumerId] == nil {
 		return false, errors.New("当前consumerId不存在，无法删除对应的consumer")
 	}
@@ -186,7 +186,7 @@ func (this *ConsumerManagerService) StopOneConsume(consumerId string) (bool, err
 }
 
 // 去更新mysql备份数据的是否正在运行状态
-func (this *ConsumerManagerService) UpdateConsumerInfo(consumerUUid string, running bool) {
+func (c *ConsumerManagerService) UpdateConsumerInfo(consumerUUid string, running bool) {
 	consumerBackupModel := models.ConsumerBackup{}
 	data, err := consumerBackupModel.GetConsumerBackupByConsumerId(consumerUUid)
 	// 如果出错或者没有数据

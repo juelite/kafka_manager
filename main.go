@@ -6,7 +6,6 @@ import (
 	_ "kafka_manager/boots"
 	_ "kafka_manager/constants"
 	_ "kafka_manager/routers"
-	"kafka_manager/services"
 )
 
 func main() {
@@ -22,8 +21,8 @@ func main() {
 	}
 
 	// 重启后还原消费者现场
-	consumerLive := &services.ConsumerManagerService{}
-	consumerLive.InitConsumerAndRestore()
+	//consumerLive := &services.ConsumerManagerService{}
+	//consumerLive.InitConsumerAndRestore()
 
 	beego.Run()
 }

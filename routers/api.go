@@ -10,7 +10,7 @@ func init() {
 	// 获取kafka集群所有的topics,可筛选
 	beego.Router("/api/getTopics", &controllers.TopicController{}, "GET:GetTopicsData")
 	// 获取某一个topic的分区状态
-	beego.Router("/api/getPartitions", &controllers.MainController{})
+	//beego.Router("/api/getPartitions", &controllers.MainController{})
 	// 创建一个topic
 	beego.Router("/api/createTopic", &controllers.TopicController{}, "POST:CreateTopic")
 
